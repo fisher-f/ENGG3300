@@ -142,7 +142,6 @@ class LinearRegressionModel:
         phi = self.build_phi_matrix(X)
         gamma = self.gamma
         I = np.identity(self.m)
-        XT = X.T
 
         self.theta1 = np.linalg.inv(phi.T @ phi + gamma * I) @ phi.T @ Y[0, :]
         self.theta2 = np.linalg.inv(phi.T @ phi + gamma * I) @ (phi.T @ Y[1, :])

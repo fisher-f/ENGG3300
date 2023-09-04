@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from models import LinearRegressionModel
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 
 # load the dataframe in
 df = pd.read_csv('magnetic_field_experiment1.csv')
@@ -99,17 +99,105 @@ plt.show()
 
 fit_model = LinearRegressionModel(locations=locations, lengthscale=0.2, gamma=1.0)
 
+# N = len(X[0, :])
+# N_train = np.floor(N * 0.2).astype(int)
+# X_train = X[:, :N_train]
+# Y_train = Y[:, :N_train]
+# fit_model.fit(X_train, Y_train)
+# y1hat, y2hat, y3hat = fit_model.predict(X_train)
+
+#
+# plt.plot(np.linspace(0, 100, len(y1hat)), y2hat, label='pred')
+# plt.plot(np.linspace(0, 100, len(Y_train[0, :])), Y_train[1, :], label='true')
+# plt.legend()
+# plt.show()
+#
+# print('MSE', np.mean((y1hat - Y_train[0,:]) ** 2))
+
+#--------------------------------------
+# 5.1
+#-------------------------------------
+
+lengthscales = np.sqrt(np.logspace(-2.5,-0.8,10))
+gammas = np.logspace(-2,1,10)
+MSE_store = np.zeros((len(lengthscales), len(gammas)))
+
+for i in range(len(lengthscales)):
+    for j in range(len(gammas)):
+        gamma = gammas[j]
+        ls = lengthscales[i]
+        kf = KFold(5)
+        MSE1 = 0
+        MSE2 = 0
+        MSE3 = 0
+        for train, test in kf.split(X.T, Y.T):
+            fit_model = LinearRegressionModel(locations=locations, lengthscale=ls, gamma=gamma)
+            X_train = X[:, train]
+            Y_train = Y[:, train]
+            Y_test = Y[:, test]
+            X_test = X[:, test]
+            fit_model.fit(X_train, Y_train)
+            y1hat, y2hat, y3hat = fit_model.predict(X_test)
+            MSE1 += np.mean((y1hat - Y_test[0, :]) ** 2)
+            MSE2 += np.mean((y2hat - Y_test[1, :]) ** 2)
+            MSE3 += np.mean((y3hat - Y_test[2, :]) ** 2)
+        MSE1 /= 5
+        MSE2 /= 5
+        MSE3 /= 5
+        MSE_store[i, j] = np.mean((MSE1, MSE2, MSE3))
+        print('\nMSE',MSE_store[i, j], 'gam', gamma, 'ls', ls)
 
 
-N = len(X[0, :])
-N_train = np.floor(N * 0.2).astype(int)
-X_train = X[:, :N_train]
-Y_train = Y[:, :N_train]
-fit_model.fit(X_train, Y_train)
-y1hat, y2hat, y3hat = fit_model.predict(X_train)
+ls_ideal_inds, gam_ideal_inds = np.where(MSE_store == min(MSE_store))
+
+ls_ideal = lengthscales[ls_ideal_inds]
+gam_ideal = gammas[gam_ideal_inds]
+print('\nls', ls_ideal, gam_ideal, 'gamma')
 
 
-plt.plot(np.linspace(0, 100, len(y1hat)), y1hat, label='pred')
-plt.plot(np.linspace(0, 100, len(Y_train[0, :])), Y_train[0, :], label='true')
-plt.legend()
+
+(X1grid, X2grid) = np.meshgrid(np.linspace(-0.09,1.48,100),np.linspace(-3.77,-1.73,100))
+locations = np.vstack((X1grid, X2grid))
+final_model = LinearRegressionModel(locations=locations, lengthscale=ls_ideal, gamma=gam_ideal)
+final_model.save_params("model parameters.npz")
+y1hat_final, y2hat_final, y3hat_final = final_model.predict(X)
+
+plt.contour(np.log10(lengthscales),np.log10(gammas),np.log10(MSE_store),25)
+plt.xlabel("Lengthscales []")
+plt.ylabel('Gamma []')
+plt.title('MSE Contour')
 plt.show()
+
+fig, axs = plt.subplots(2, 2)
+
+axs[0].plot(x1, x2)
+axs[0].set_title('Original Position Data')
+axs[0].set_ylabel('x2')
+axs[0].set_xlabel('x1')
+
+axs[1].pcolor(x1, x2, y1hat_final)
+axs[1].set_title('Predictions of Y1')
+axs[1].set_ylabel('x2')
+axs[1].set_xlabel('x1')
+
+axs[2].pcolor(x1, x2, y2hat_final)
+axs[2].set_title('Predictions of Y2')
+axs[2].set_ylabel('x2')
+axs[2].set_xlabel('x1')
+
+axs[3].pcolor(x1, x2, y3hat_final)
+axs[3].set_title('Predictions of Y3')
+axs[3].set_ylabel('x2')
+axs[3].set_xlabel('x1')
+
+# set colour bars
+colourbarY1 = fig.colorbar(y1hat_final, ax=axs[1])
+colourbarY1.set_label('Y1 Prediction')
+
+colourbarY2 = fig.colorbar(y2hat_final, ax=axs[2])
+colourbarY2.set_label('Y2 Prediction')
+
+colourbarY3 = fig.colorbar(y3hat_final, ax=axs[3])
+colourbarY3.set_label('Y3 Prediction')
+plt.show()
+
