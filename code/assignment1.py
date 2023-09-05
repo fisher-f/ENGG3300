@@ -185,40 +185,47 @@ print(X1.shape, X2.shape, y1hat_final.shape)
 # plt.ylabel('Gamma []')
 # plt.title('MSE Contour')
 # plt.show()
+
+
+# Clip the data so that we can plot it
+# reshape the output y as a function of x1 and x2
+y1hat_plot = np.reshape(y1hat_final[0:6400], (80, 80))
+y2hat_plot = np.reshape(y2hat_final[0:6400], (80, 80))
+y3hat_plot = np.reshape(y3hat_final[0:6400], (80, 80))
+
+# note this gives shape 80, 80 for both X1plot, X2plot and the y[i]_plot
+(X1plot, X2plot) = np.meshgrid(np.linspace(-0.09,1.48,80),np.linspace(-3.77,-1.73,80))
+
+fig, axs = plt.subplots(2, 2)
+
+axs[0, 0].plot(x1, x2)
+axs[0, 0].set_title('Original Position Data')
+axs[0, 0].set_ylabel('x2')
+axs[0, 0].set_xlabel('x1')
+
+y1_plot = axs[0, 1].pcolor(X1plot, X2plot, y1hat_plot,  shading='auto')
+axs[0, 1].set_title('Predictions of Y1')
+axs[0, 1].set_ylabel('x2')
+axs[0, 1].set_xlabel('x1')
+
+y2_plot = axs[1, 0].pcolor(X1plot, X2plot, y2hat_plot,  shading='auto')
+axs[1, 0].set_title('Predictions of Y2')
+axs[1, 0].set_ylabel('x2')
+axs[1, 0].set_xlabel('x1')
+
+y3_plot = axs[1, 1].pcolor(X1plot, X2plot, y3hat_plot,  shading='auto')
+axs[1, 1].set_title('Predictions of Y3')
+axs[1, 1].set_ylabel('x2')
+axs[1, 1].set_xlabel('x1')
 #
-# fig, axs = plt.subplots(2, 2)
-#
-# axs[0].plot(x1, x2)
-# axs[0].set_title('Original Position Data')
-# axs[0].set_ylabel('x2')
-# axs[0].set_xlabel('x1')
-#
-# axs[0, 1].pcolor(x1, x2, y1hat_final)
-# axs[0, 1].set_title('Predictions of Y1')
-# axs[0, 1].set_ylabel('x2')
-# axs[0, 1].set_xlabel('x1')
-#
-# axs[1, 0].pcolor(x1, x2, y2hat_final)
-# axs[1, 0].set_title('Predictions of Y2')
-# axs[1, 0].set_ylabel('x2')
-# axs[1, 0].set_xlabel('x1')
-#
-# axs[1, 1].pcolor(x1, x2, y3hat_final)
-# axs[1, 1].set_title('Predictions of Y3')
-# axs[1, 1].set_ylabel('x2')
-# axs[1, 1].set_xlabel('x1')
-# #
-# # set colour bars
-# colourbarY1 = fig.colorbar(y1hat_final, ax=axs[1])
-# colourbarY1.set_label('Y1 Prediction')
-#
-# colourbarY2 = fig.colorbar(y2hat_final, ax=axs[2])
-# colourbarY2.set_label('Y2 Prediction')
-#
-# colourbarY3 = fig.colorbar(y3hat_final, ax=axs[3])
-# colourbarY3.set_label('Y3 Prediction')
-# plt.show()
-#
-#
-#
-# print(x1.shape, x2.shape, y1hat_final.shape)
+# set colour bars
+colourbarY1 = fig.colorbar(y1_plot, ax=axs[0, 1])
+colourbarY1.set_label('Y1 Prediction')
+
+colourbarY2 = fig.colorbar(y2_plot, ax=axs[1, 0])
+colourbarY2.set_label('Y2 Prediction')
+
+colourbarY3 = fig.colorbar(y3_plot, ax=axs[1, 1])
+colourbarY3.set_label('Y3 Prediction')
+plt.show()
+
