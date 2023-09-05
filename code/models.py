@@ -158,3 +158,14 @@ class LinearRegressionModel:
         self.set_lengthscale(lengthcale)
         self.set_gamma(gamma)
         self.load_params('model_parameters.npz')
+
+    def calculate_variances(self, X, X_star):
+
+        # YOUR CODE HERE
+        gamma = self.gamma
+        I = np.identity(self.m)
+        phi = self.build_phi_matrix(X)
+        phi_star = self.build_phi_matrix(X_star)
+        Sigma_Y_star = phi_star @ (np.linalg.inv(phi.T @ phi + gamma * I)) @ phi_star.T
+        return Sigma_Y_star
+

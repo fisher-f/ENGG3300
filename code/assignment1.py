@@ -194,7 +194,7 @@ y2hat_plot = np.reshape(y2hat_final[0:6400], (80, 80))
 y3hat_plot = np.reshape(y3hat_final[0:6400], (80, 80))
 
 # note this gives shape 80, 80 for both X1plot, X2plot and the y[i]_plot
-(X1plot, X2plot) = np.meshgrid(np.linspace(-0.09,1.48,80),np.linspace(-3.77,-1.73,80))
+(X1plot, X2plot) = np.meshgrid(np.linspace(-0.09,1.48,80), np.linspace(-3.77,-1.73,80))
 
 fig, axs = plt.subplots(2, 2)
 
@@ -229,3 +229,28 @@ colourbarY3 = fig.colorbar(y3_plot, ax=axs[1, 1])
 colourbarY3.set_label('Y3 Prediction')
 plt.show()
 
+
+## find the variance of the predictions
+
+# reshape X1plot and X2plot into Xstar [2, 6400]
+X1star = np.reshape(X1plot, (1, 80*80))
+X2star = np.reshape(X2plot, (1, 80*80))
+Xstar = np.vstack((X1star, X2star))
+
+# use model to calculate the variance
+Sigma_y_star = final_model.calculate_variances(X[0:6400], Xstar)
+
+# calculate the sqrt of diagonal elements in the matrix
+# this gives the standard deviation at each point
+stand_dev = np.sqrt(np.diag(Sigma_y_star))
+stand_dev = np.reshape(stand_dev, (80, 80))
+# plot the SD as function of X1plot and X2plot
+
+fig, axs = plt.subplots()
+SDPlot = axs.pcolor(X1plot, X2plot, stand_dev, shading='auto')
+axs.set_title("Standard Deviation at each point")
+axs.set_xlabel("X1")
+axs.set_ylabel("X2")
+colourbarSD = fig.colorbar(SDPlot, ax=axs)
+colourbarSD.set_label('Standard Deviation')
+plt.show()
