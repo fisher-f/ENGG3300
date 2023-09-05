@@ -147,3 +147,14 @@ class LinearRegressionModel:
         self.theta2 = np.linalg.inv(phi.T @ phi + gamma * I) @ (phi.T @ Y[1, :])
         self.theta3 = np.linalg.inv(phi.T @ phi + gamma * I) @ (phi.T @ Y[2, :])
 
+    def load_trained_model(self):
+        (X1grid, X2grid) = np.meshgrid(np.linspace(-0.09, 1.48, 100), np.linspace(-3.77, -1.73, 100))
+        X1grid = np.reshape(X1grid, (1, 100 * 100))
+        X2grid = np.reshape(X2grid, (1, 100 * 100))
+        locations = np.vstack((X1grid, X2grid)) # ?? the radial basis function locations you used for your final trained model model
+        lengthcale = 0.13420781 # ?? the lengthscale you used for your final trained model
+        gamma = 0.04641589 # ?? the regularisation term you used for your final trained model
+        self.set_locations(locations)
+        self.set_lengthscale(lengthcale)
+        self.set_gamma(gamma)
+        self.load_params('model_parameters.npz')

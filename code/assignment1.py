@@ -91,27 +91,29 @@ xlocation -= 0.1
 ylocation = -ylocation - 1.7
 ylocation = np.reshape(ylocation, (1, 41*41))
 locations = np.vstack((xlocation, ylocation))
-plt.plot(xlocation-0.1, -ylocation-1.7, '.')
+
+# plot of the RBF locations over the position data
+# plt.plot(xlocation, ylocation, '.')
 # plt.plot(x1, x2, label='Data')
 # plt.plot(x1_missing, x2_missing, 'r.', label='Missing Data')
 # plt.plot(x1_corrupted, x2_corrupted, 'rx', label='Corrupt Data')
-plt.show()
+# plt.show()
 
-fit_model = LinearRegressionModel(locations=locations, lengthscale=0.2, gamma=1.0)
-
+# fit_model = LinearRegressionModel(locations=locations, lengthscale=0.2, gamma=1.0)
+#
 # N = len(X[0, :])
 # N_train = np.floor(N * 0.2).astype(int)
 # X_train = X[:, :N_train]
 # Y_train = Y[:, :N_train]
 # fit_model.fit(X_train, Y_train)
 # y1hat, y2hat, y3hat = fit_model.predict(X_train)
-
 #
+# #
 # plt.plot(np.linspace(0, 100, len(y1hat)), y2hat, label='pred')
 # plt.plot(np.linspace(0, 100, len(Y_train[0, :])), Y_train[1, :], label='true')
 # plt.legend()
 # plt.show()
-#
+# #
 # print('MSE', np.mean((y1hat - Y_train[0,:]) ** 2))
 
 #--------------------------------------
@@ -161,16 +163,22 @@ print('\nls', ls_ideal, gam_ideal, 'gamma')
 
 
 (X1grid, X2grid) = np.meshgrid(np.linspace(-0.09,1.48,100),np.linspace(-3.77,-1.73,100))
-locations = np.vstack((X1grid, X2grid))
-final_model = LinearRegressionModel(locations=locations, lengthscale=ls_ideal, gamma=gam_ideal)
-final_model.save_params("model parameters.npz")
+X1grid = np.reshape(X1grid, (1, 100*100))
+X2grid = np.reshape(X2grid, (1, 100*100))
+locations_final = np.vstack((X1grid, X2grid))
+final_model = LinearRegressionModel(locations=locations_final, lengthscale=ls_ideal, gamma=gam_ideal)
 final_model.fit(X, Y)
 y1hat_final, y2hat_final, y3hat_final = final_model.predict(X)
+final_model.save_params("model_parameters.npz")
 
-X1, X2 = np.meshgrid(x1, x2)
-y1hat_final = y1hat_final.reshape(X1.shape)
-y2hat_final = y2hat_final.reshape(X1.shape)
-y3hat_final = y3hat_final.reshape(X1.shape)
+plt.plot(np.linspace(0, 100, len(y1hat_final)), y1hat_final, label='pred')
+plt.plot(np.linspace(0, 100, len(Y[0, :])), Y[0, :], label='true')
+plt.legend()
+plt.show()
+
+(X1, X2) = np.meshgrid(x1,x2)
+
+print(X1.shape, X2.shape, y1hat_final.shape)
 
 # plt.contour(np.log10(lengthscales),np.log10(gammas),np.log10(MSE_store),25)
 # plt.xlabel("Lengthscales []")
@@ -178,39 +186,39 @@ y3hat_final = y3hat_final.reshape(X1.shape)
 # plt.title('MSE Contour')
 # plt.show()
 #
-fig, axs = plt.subplots(2, 2)
-
+# fig, axs = plt.subplots(2, 2)
+#
 # axs[0].plot(x1, x2)
 # axs[0].set_title('Original Position Data')
 # axs[0].set_ylabel('x2')
 # axs[0].set_xlabel('x1')
-
-axs[0, 1].pcolor(x1, x2, y1hat_final)
-axs[0, 1].set_title('Predictions of Y1')
-axs[0, 1].set_ylabel('x2')
-axs[0, 1].set_xlabel('x1')
-
-axs[1, 0].pcolor(x1, x2, y2hat_final)
-axs[1, 0].set_title('Predictions of Y2')
-axs[1, 0].set_ylabel('x2')
-axs[1, 0].set_xlabel('x1')
-
-axs[1, 1].pcolor(x1, x2, y3hat_final)
-axs[1, 1].set_title('Predictions of Y3')
-axs[1, 1].set_ylabel('x2')
-axs[1, 1].set_xlabel('x1')
 #
-# set colour bars
-colourbarY1 = fig.colorbar(y1hat_final, ax=axs[1])
-colourbarY1.set_label('Y1 Prediction')
-
-colourbarY2 = fig.colorbar(y2hat_final, ax=axs[2])
-colourbarY2.set_label('Y2 Prediction')
-
-colourbarY3 = fig.colorbar(y3hat_final, ax=axs[3])
-colourbarY3.set_label('Y3 Prediction')
-plt.show()
-
-
-
-print(x1.shape, x2.shape, y1hat_final.shape)
+# axs[0, 1].pcolor(x1, x2, y1hat_final)
+# axs[0, 1].set_title('Predictions of Y1')
+# axs[0, 1].set_ylabel('x2')
+# axs[0, 1].set_xlabel('x1')
+#
+# axs[1, 0].pcolor(x1, x2, y2hat_final)
+# axs[1, 0].set_title('Predictions of Y2')
+# axs[1, 0].set_ylabel('x2')
+# axs[1, 0].set_xlabel('x1')
+#
+# axs[1, 1].pcolor(x1, x2, y3hat_final)
+# axs[1, 1].set_title('Predictions of Y3')
+# axs[1, 1].set_ylabel('x2')
+# axs[1, 1].set_xlabel('x1')
+# #
+# # set colour bars
+# colourbarY1 = fig.colorbar(y1hat_final, ax=axs[1])
+# colourbarY1.set_label('Y1 Prediction')
+#
+# colourbarY2 = fig.colorbar(y2hat_final, ax=axs[2])
+# colourbarY2.set_label('Y2 Prediction')
+#
+# colourbarY3 = fig.colorbar(y3hat_final, ax=axs[3])
+# colourbarY3.set_label('Y3 Prediction')
+# plt.show()
+#
+#
+#
+# print(x1.shape, x2.shape, y1hat_final.shape)
