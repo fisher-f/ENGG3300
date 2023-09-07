@@ -97,11 +97,24 @@ class LinearRegressionModel:
         N = len(X[1,:])
         m = int(self.m)
         phi = np.zeros((N, m))
-        for i in range(N):
-            for k in range(m):
-                d = np.sqrt((X1[i] - L1[k])**2 + (X2[i] - L2[k])**2)
-                phi[i, k] = np.exp(-(1/(2 * lengthscale**2)) * (d)**2)
+
+        # this method was foudn using ChatGPT
+        # Prompt: achieve this as fast as possible:         for i in range(N):
+        #             for k in range(m):
+        #                 d = np.sqrt((X1[i] - L1[k])**2 + (X2[i] - L2[k])**2)
+        #                 phi[i, k] = np.exp(-(1/(2 * lengthscale**2)) * (d)**2)
+        X1 = X1[:, np.newaxis]  # Shape: (N, 1)
+        X2 = X2[:, np.newaxis]  # Shape: (N, 1)
+        L1 = L1[np.newaxis, :]  # Shape: (1, m)
+        L2 = L2[np.newaxis, :]  # Shape: (1, m)
+
+        # Compute the distances
+        d = np.sqrt((X1 - L1) ** 2 + (X2 - L2) ** 2)
+
+        # Compute phi
+        phi = np.exp(-(1 / (2 * lengthscale ** 2)) * d ** 2)
         return phi
+
 
     def predict(self, X):
         """
@@ -148,10 +161,15 @@ class LinearRegressionModel:
         self.theta3 = np.linalg.inv(phi.T @ phi + gamma * I) @ (phi.T @ Y[2, :])
 
     def load_trained_model(self):
-        (X1grid, X2grid) = np.meshgrid(np.linspace(-0.09, 1.48, 100), np.linspace(-3.77, -1.73, 100))
-        X1grid = np.reshape(X1grid, (1, 100 * 100))
-        X2grid = np.reshape(X2grid, (1, 100 * 100))
-        locations = np.vstack((X1grid, X2grid)) # ?? the radial basis function locations you used for your final trained model model
+        N_mesh_x = np.linspace(0, 1.6, 41)
+        N_mesh_y = np.linspace(0, 2.1, 41)
+
+        xlocation, ylocation = np.meshgrid(N_mesh_x, N_mesh_y)
+        xlocation = np.reshape(xlocation, (1, 41 * 41))
+        xlocation -= 0.1
+        ylocation = -ylocation - 1.7
+        ylocation = np.reshape(ylocation, (1, 41 * 41))
+        locations = np.vstack((xlocation, ylocation)) # ?? the radial basis function locations you used for your final trained model model
         lengthcale = 0.13420781 # ?? the lengthscale you used for your final trained model
         gamma = 0.04641589 # ?? the regularisation term you used for your final trained model
         self.set_locations(locations)

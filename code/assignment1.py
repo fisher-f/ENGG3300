@@ -49,14 +49,14 @@ Y = np.vstack((y1, y2, y3))
 X = np.vstack((x1, x2))
 
 # plot the position data
-# plt.plot(x1, x2, label='Data')
-# plt.plot(x1_missing, x2_missing, 'r.', label='Missing Data')
-# plt.plot(x1_corrupted, x2_corrupted, 'rx', label='Corrupt Data')
-# plt.title("Position Data")
-# plt.xlabel('x1')
-# plt.ylabel('x2')
-# plt.legend()
-# plt.show()
+plt.plot(x1, x2, label='Data')
+plt.plot(x1_missing, x2_missing, 'r.', label='Missing Data')
+plt.plot(x1_corrupted, x2_corrupted, 'rx', label='Corrupt Data')
+plt.title("Position Data")
+plt.xlabel('x1')
+plt.ylabel('x2')
+plt.legend()
+plt.show()
 
 
 mu_1 = np.linspace(0,1,20)
@@ -72,10 +72,22 @@ X_line = np.vstack((np.linspace(0,1,400),np.linspace(0,1,400)))
 test_model.set_parameters(theta1, theta2, theta3)
 
 y1hat, y2hat, y3hat = test_model.predict(X_line)
-# plt.plot(X_line[0, :], y1hat)
-# plt.plot(X_line[0, :], y2hat)
-# plt.plot(X_line[0, :], y3hat)
-# plt.show()
+
+fig, axs = plt.subplots(3, 1)
+
+fig.suptitle("Model testing with lengthscale = 0.1")
+axs[0].plot(X_line[0, :], y1hat)
+axs[0].set_ylabel("y1")
+axs[0].set_xlabel("x1")
+
+axs[1].plot(X_line[0, :], y2hat)
+axs[1].set_ylabel("y1")
+axs[1].set_xlabel("x1")
+
+axs[2].plot(X_line[0, :], y3hat)
+axs[2].set_ylabel("y1")
+axs[2].set_xlabel("x1")
+plt.show()
 
 
 #--------------------------------------
@@ -92,29 +104,57 @@ ylocation = -ylocation - 1.7
 ylocation = np.reshape(ylocation, (1, 41*41))
 locations = np.vstack((xlocation, ylocation))
 
-# plot of the RBF locations over the position data
+# plot of the RBF locations over the position data to check that locations go over the initial plot
 # plt.plot(xlocation, ylocation, '.')
 # plt.plot(x1, x2, label='Data')
 # plt.plot(x1_missing, x2_missing, 'r.', label='Missing Data')
 # plt.plot(x1_corrupted, x2_corrupted, 'rx', label='Corrupt Data')
 # plt.show()
 
-# fit_model = LinearRegressionModel(locations=locations, lengthscale=0.2, gamma=1.0)
+fit_model = LinearRegressionModel(locations=locations, lengthscale=0.2, gamma=1.0)
 #
-# N = len(X[0, :])
-# N_train = np.floor(N * 0.2).astype(int)
-# X_train = X[:, :N_train]
-# Y_train = Y[:, :N_train]
-# fit_model.fit(X_train, Y_train)
-# y1hat, y2hat, y3hat = fit_model.predict(X_train)
+N = len(X[0, :])
+N_train = np.floor(N * 0.2).astype(int)
+X_train = X[:, :N_train]
+Y_train = Y[:, :N_train]
+fit_model.fit(X_train, Y_train)
+y1hat, y2hat, y3hat = fit_model.predict(X_train)
+
+x_length = np.linspace(0, len(y1hat), len(y1hat))
 #
-# #
+fig, axs = plt.subplots(3, 1)
+
+axs[0].plot(x_length, y1hat, label="Predicted")
+axs[0].plot(x_length, Y_train[0, :], label="True")
+axs[0].set_title("Y1 Prediction")
+axs[0].set_ylabel("Y Data")
+axs[0].set_xlabel("Sample No.")
+axs[0].legend()
+
+axs[1].plot(x_length, y2hat, label="Predicted")
+axs[1].plot(x_length, Y_train[1, :], label="True")
+axs[1].set_title("Y2 Prediction")
+axs[1].set_ylabel("Y Data")
+axs[1].set_xlabel("Sample No.")
+axs[1].legend()
+
+axs[2].plot(x_length, y3hat, label="Predicted")
+axs[2].plot(x_length, Y_train[2, :], label="True")
+axs[2].set_title("Y2 Prediction")
+axs[2].set_ylabel("Y Data")
+axs[2].set_xlabel("Sample No.")
+axs[2].legend()
+plt.tight_layout()
+plt.show()
+
+
+
 # plt.plot(np.linspace(0, 100, len(y1hat)), y2hat, label='pred')
 # plt.plot(np.linspace(0, 100, len(Y_train[0, :])), Y_train[1, :], label='true')
 # plt.legend()
 # plt.show()
-# #
-# print('MSE', np.mean((y1hat - Y_train[0,:]) ** 2))
+#
+print('The MSE of the first 20% of the measurements is', np.mean((y1hat - Y_train[0,:]) ** 2))
 
 #--------------------------------------
 # 5.1
@@ -150,11 +190,11 @@ MSE_store = np.zeros((len(lengthscales), len(gammas)))
 #         print('\nMSE',MSE_store[i, j], 'gam', gamma, 'ls', ls)
 
 
-# minMSE = np.min(MSE_store)
-# ls_ideal_inds, gam_ideal_inds = np.where(MSE_store == minMSE)
-#
-# ls_ideal = lengthscales[ls_ideal_inds]
-# gam_ideal = gammas[gam_ideal_inds]
+minMSE = np.min(MSE_store)
+ls_ideal_inds, gam_ideal_inds = np.where(MSE_store == minMSE)
+
+ls_ideal = lengthscales[ls_ideal_inds]
+gam_ideal = gammas[gam_ideal_inds]
 
 ls_ideal = 0.13420781
 gam_ideal = 0.04641589
@@ -165,11 +205,13 @@ print('\nls', ls_ideal, gam_ideal, 'gamma')
 (X1grid, X2grid) = np.meshgrid(np.linspace(-0.09,1.48,100),np.linspace(-3.77,-1.73,100))
 X1grid = np.reshape(X1grid, (1, 100*100))
 X2grid = np.reshape(X2grid, (1, 100*100))
-locations_final = np.vstack((X1grid, X2grid))
-final_model = LinearRegressionModel(locations=locations_final, lengthscale=ls_ideal, gamma=gam_ideal)
+Xnew = np.vstack((X1grid, X2grid))
+final_model = LinearRegressionModel(locations=locations, lengthscale=ls_ideal, gamma=gam_ideal) # change to initial locations
 final_model.fit(X, Y)
-y1hat_final, y2hat_final, y3hat_final = final_model.predict(X)
+y1hat_save, y2hat_save, y3hat_save = final_model.predict(X)
 final_model.save_params("model_parameters.npz")
+y1hat_final, y2hat_final, y3hat_final = final_model.predict(Xnew)  #change to locations final
+
 
 plt.plot(np.linspace(0, 100, len(y1hat_final)), y1hat_final, label='pred')
 plt.plot(np.linspace(0, 100, len(Y[0, :])), Y[0, :], label='true')
@@ -180,26 +222,29 @@ plt.show()
 
 print(X1.shape, X2.shape, y1hat_final.shape)
 
-# plt.contour(np.log10(lengthscales),np.log10(gammas),np.log10(MSE_store),25)
-# plt.xlabel("Lengthscales []")
-# plt.ylabel('Gamma []')
-# plt.title('MSE Contour')
+# fig, axs = plt.subplots()
+# MSEPlot = axs.contour(np.log10(lengthscales),np.log10(gammas),np.log10(MSE_store),25)
+# axs.set_title("MSE Contour")
+# axs.set_xlabel("lengthscale")
+# axs.set_ylabel("gamma")
+# colourbarMSE = fig.colorbar(MSEPlot, ax=axs)
+# colourbarMSE.set_label('Mean Sqaured Error')
 # plt.show()
-
 
 # Clip the data so that we can plot it
 # reshape the output y as a function of x1 and x2
-y1hat_plot = np.reshape(y1hat_final[0:6400], (80, 80))
-y2hat_plot = np.reshape(y2hat_final[0:6400], (80, 80))
-y3hat_plot = np.reshape(y3hat_final[0:6400], (80, 80))
+y1hat_plot = np.reshape(y1hat_final, (100, 100))      #change this to 100 by 100 as its what we put into final model
+y2hat_plot = np.reshape(y2hat_final, (100, 100))
+y3hat_plot = np.reshape(y3hat_final, (100, 100))
 
+yMagnitude = np.sqrt((y1hat_plot**2) + (y2hat_plot**2) + (y3hat_plot**2))
 # note this gives shape 80, 80 for both X1plot, X2plot and the y[i]_plot
-(X1plot, X2plot) = np.meshgrid(np.linspace(-0.09,1.48,80), np.linspace(-3.77,-1.73,80))
+(X1plot, X2plot) = np.meshgrid(np.linspace(-0.09,1.48,100), np.linspace(-3.77,-1.73,100))         #change to size 100
 
 fig, axs = plt.subplots(2, 2)
 
-axs[0, 0].plot(x1, x2)
-axs[0, 0].set_title('Original Position Data')
+yM_plot = axs[0, 0].pcolor(X1plot, X2plot, yMagnitude,  shading='auto')
+axs[0, 0].set_title('Predictions of Y Magnitude')
 axs[0, 0].set_ylabel('x2')
 axs[0, 0].set_xlabel('x1')
 
@@ -219,6 +264,9 @@ axs[1, 1].set_ylabel('x2')
 axs[1, 1].set_xlabel('x1')
 #
 # set colour bars
+colourbarYM = fig.colorbar(yM_plot, ax=axs[0, 0])
+colourbarYM.set_label('Y Magnitude Prediction')
+
 colourbarY1 = fig.colorbar(y1_plot, ax=axs[0, 1])
 colourbarY1.set_label('Y1 Prediction')
 
@@ -227,23 +275,20 @@ colourbarY2.set_label('Y2 Prediction')
 
 colourbarY3 = fig.colorbar(y3_plot, ax=axs[1, 1])
 colourbarY3.set_label('Y3 Prediction')
+
+
 plt.show()
 
 
 ## find the variance of the predictions
 
-# reshape X1plot and X2plot into Xstar [2, 6400]
-X1star = np.reshape(X1plot, (1, 80*80))
-X2star = np.reshape(X2plot, (1, 80*80))
-Xstar = np.vstack((X1star, X2star))
-
 # use model to calculate the variance
-Sigma_y_star = final_model.calculate_variances(X[0:6400], Xstar)
+Sigma_y_star = final_model.calculate_variances(X, Xnew)
 
 # calculate the sqrt of diagonal elements in the matrix
 # this gives the standard deviation at each point
 stand_dev = np.sqrt(np.diag(Sigma_y_star))
-stand_dev = np.reshape(stand_dev, (80, 80))
+stand_dev = np.reshape(stand_dev, (100, 100))
 # plot the SD as function of X1plot and X2plot
 
 fig, axs = plt.subplots()
