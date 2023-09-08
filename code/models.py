@@ -98,7 +98,7 @@ class LinearRegressionModel:
         m = int(self.m)
         phi = np.zeros((N, m))
 
-        # this method was foudn using ChatGPT
+        # this method was found using ChatGPT
         # Prompt: achieve this as fast as possible:         for i in range(N):
         #             for k in range(m):
         #                 d = np.sqrt((X1[i] - L1[k])**2 + (X2[i] - L2[k])**2)
